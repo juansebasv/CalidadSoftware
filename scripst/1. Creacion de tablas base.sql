@@ -68,3 +68,7 @@ jornada varchar(1) not null
 ALTER TABLE horario_materia
 	ADD CONSTRAINT UQ_id_materia_grupo_dia UNIQUE (id_materia,grupo,dia);
 
+
+
+
+
