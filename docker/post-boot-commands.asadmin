@@ -1,0 +1,2 @@
+create-jdbc-connection-pool --datasourceclassname=org.postgresql.ds.PGSimpleDataSource --restype=javax.sql.DataSource --steadypoolsize=8 --maxpoolsize=64 --poolresize=4 --maxwait=20000 --isconnectvalidatereq=true --validationmethod=meta-data --failconnection=true --property ServerName=db:PortNumber=5432:User=postgres:Password=sebastian94:DatabaseName=Sistema_Notas:URL=jdbc\:postgresql\://db\:5432/Sistema_Notas TesisConnectionPool
+create-jdbc-resource --connectionpoolid=TesisConnectionPool jdbc/TesisMyDatasource

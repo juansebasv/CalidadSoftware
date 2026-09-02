@@ -1,0 +1,64 @@
+# ============================================================================
+#  Sistema de Asignacion de Horarios Docentes  -  entorno completo Docker
+#
+#    db   -> PostgreSQL 16   (esquema optimizado + semilla robusta)
+#    app  -> Payara 5 / JDK11 con la aplicacion Java EE desplegada en "/"
+#
+#  Uso:
+#    docker compose up -d --build       # construir y levantar
+#    docker compose logs -f app         # ver logs
+#    docker compose down                # detener
+#    docker compose down -v             # detener y borrar datos (recarga semilla)
+#
+#  URLs:
+#    App (login)      -> http://localhost:8080/
+#    API REST         -> http://localhost:8080/api
+#    Swagger UI       -> http://localhost:8080/swagger-ui/   (spec: /openapi)
+#    Consola Payara   -> https://localhost:4848  (admin / admin)
+#    PostgreSQL       -> localhost:5432  (Sistema_Notas / postgres / sebastian94)
+# ============================================================================
+services:
+
+  db:
+    image: postgres:16
+    container_name: tesiscalidad-db
+    environment:
+      POSTGRES_DB: Sistema_Notas
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: sebastian94
+      TZ: America/Bogota
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./docker/initdb:/docker-entrypoint-initdb.d:ro
+      - pgdata:/var/lib/postgresql/data
+    # Sano solo cuando el esquema Y la semilla ya se cargaron (la consulta a
+    # 'usuario' falla mientras 01-schema.sql / 02-seed.sql siguen ejecutandose).
+    healthcheck:
+      test: ["CMD-SHELL",
+             "pg_isready -U postgres -d Sistema_Notas && psql -U postgres -d Sistema_Notas -tAc 'SELECT count(*) FROM usuario' | grep -qE '^[1-9]'"]
+      interval: 5s
+      timeout: 10s
+      retries: 40
+      start_period: 30s
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: tesiscalidad-app
+    environment:
+      TZ: America/Bogota
+      APP_SECURITY_MAX_LOGIN_ATTEMPTS: "5"
+      APP_SECURITY_LOCKOUT_MINUTES: "30"
+      APP_PAGINATION_DEFAULT_SIZE: "25"
+      APP_PAGINATION_MAX_SIZE: "200"
+    ports:
+      - "8080:8080"
+      - "4848:4848"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<ui:composition template="/WEB-INF/plantilla/plantilla.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:t="http://tesiscalidad/ui">
+
+    <ui:param name="pageTitle" value="Disponibilidad"/>
+
+    <ui:define name="contenido">
+        <h:form id="form">
+            <p:panel styleClass="panel-elevado">
+                <f:facet name="header"><i class="pi pi-clock"></i> Disponibilidad horaria del docente</f:facet>
+
+                <div class="p-fluid" style="max-width:520px;margin-bottom:1rem">
+                    <p:outputLabel for="prof" value="Profesor"/>
+                    <p:selectOneMenu id="prof" value="#{disponibilidadBean.idProfesor}" filter="true"
+                                     filterMatchMode="contains">
+                        <f:selectItem itemLabel="-- Seleccione --" itemValue="#{null}"/>
+                        <f:selectItems value="#{disponibilidadBean.profesores}" var="p"
+                                       itemLabel="#{p.codigo} - #{p.nombre}" itemValue="#{p.id}"/>
+                        <p:ajax listener="#{disponibilidadBean.cargar}" update="rejilla generar"/>
+                    </p:selectOneMenu>
+                </div>
+
+                <h:panelGroup id="rejilla" layout="block" styleClass="tabla-scroll">
+                  <h:panelGroup layout="block" rendered="#{not empty disponibilidadBean.idProfesor}">
+                    <table class="rejilla-disp" style="border-collapse:separate;border-spacing:6px">
+                        <thead>
+                            <tr>
+                                <th>Hora</th>
+                                <ui:repeat value="#{disponibilidadBean.diasRejilla}" var="d">
+                                    <th>#{d[1]}</th>
+                                </ui:repeat>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <ui:repeat value="#{disponibilidadBean.horasRejilla}" var="hora">
+                                <tr>
+                                    <td style="font-weight:600">#{hora}:00</td>
+                                    <ui:repeat value="#{disponibilidadBean.diasRejilla}" var="d">
+                                        <td>
+                                            <p:commandLink process="@this" update="rejilla"
+                                                           styleClass="celda-disp #{disponibilidadBean.estado(d[0], hora) eq '1' ? 'ocupada' : (disponibilidadBean.tiene(d[0], hora) ? 'libre' : '')}"
+                                                           actionListener="#{disponibilidadBean.alternar(d[0], hora)}"
+                                                           disabled="#{not sesionUsuarioBean.puedeGestionar}">
+                                                <i class="pi #{disponibilidadBean.tiene(d[0], hora) ? (disponibilidadBean.estado(d[0], hora) eq '1' ? 'pi-lock' : 'pi-check') : 'pi-plus'}"></i>
+                                            </p:commandLink>
+                                        </td>
+                                    </ui:repeat>
+                                </tr>
+                            </ui:repeat>
+                        </tbody>
+                    </table>
+                  </h:panelGroup>
+                    <p:staticMessage severity="info" summary="Sin profesor"
+                                     detail="Seleccione un profesor para ver y editar su disponibilidad."
+                                     rendered="#{empty disponibilidadBean.idProfesor}"/>
+                </h:panelGroup>
+            </p:panel>
+
+            <p:panel styleClass="panel-elevado" style="margin-top:1.2rem" id="generar"
+                     rendered="#{not empty disponibilidadBean.idProfesor and sesionUsuarioBean.puedeGestionar}">
+                <f:facet name="header"><i class="pi pi-bolt"></i> Generar rejilla</f:facet>
+                <div class="p-fluid p-formgrid p-grid">
+                    <div class="p-field p-col-12 p-md-6">
+                        <p:outputLabel value="Dias"/>
+                        <p:selectManyCheckbox value="#{disponibilidadBean.diasGeneracion}" layout="grid" columns="3">
+                            <f:selectItem itemLabel="Lun" itemValue="1"/>
+                            <f:selectItem itemLabel="Mar" itemValue="2"/>
+                            <f:selectItem itemLabel="Mie" itemValue="3"/>
+                            <f:selectItem itemLabel="Jue" itemValue="4"/>
+                            <f:selectItem itemLabel="Vie" itemValue="5"/>
+                            <f:selectItem itemLabel="Sab" itemValue="6"/>
+                        </p:selectManyCheckbox>
+                    </div>
+                    <div class="p-field p-col-6 p-md-3">
+                        <p:outputLabel for="hi" value="Hora inicio"/>
+                        <p:inputNumber id="hi" value="#{disponibilidadBean.horaInicioGeneracion}" minValue="6" maxValue="22"/>
+                    </div>
+                    <div class="p-field p-col-6 p-md-3">
+                        <p:outputLabel for="hf" value="Hora fin"/>
+                        <p:inputNumber id="hf" value="#{disponibilidadBean.horaFinGeneracion}" minValue="6" maxValue="22"/>
+                    </div>
+                </div>
+                <div style="text-align:right">
+                    <p:commandButton value="Limpiar todo" icon="pi pi-trash" styleClass="p-button-danger p-button-outlined"
+                                     action="#{disponibilidadBean.limpiar}" update=":form:rejilla">
+                        <p:confirm header="Confirmar" message="Eliminar toda la disponibilidad del profesor?"
+                                   icon="pi pi-exclamation-triangle"/>
+                    </p:commandButton>
+                    <p:commandButton value="Generar" icon="pi pi-bolt" styleClass="p-button-success js-ripple"
+                                     action="#{disponibilidadBean.generar}" update=":form:rejilla" style="margin-left:.5rem"/>
+                </div>
+            </p:panel>
+        </h:form>
+    </ui:define>
+</ui:composition>

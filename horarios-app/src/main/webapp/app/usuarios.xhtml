@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<ui:composition template="/WEB-INF/plantilla/plantilla.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:t="http://tesiscalidad/ui">
+
+    <ui:param name="pageTitle" value="Usuarios"/>
+
+    <ui:define name="contenido">
+        <h:form id="form">
+            <p:panel styleClass="panel-elevado">
+                <f:facet name="header"><i class="pi pi-id-card"></i> Cuentas de acceso</f:facet>
+
+                <p:toolbar style="margin-bottom:1rem;border:0;background:transparent">
+                    <p:toolbarGroup>
+                        <p:commandButton value="Nueva cuenta" icon="pi pi-user-plus" styleClass="p-button-success js-ripple"
+                                         actionListener="#{usuarioBean.nuevo}" process="@this"
+                                         update=":dlg" oncomplete="PF('dlg').show()"/>
+                    </p:toolbarGroup>
+                    <p:toolbarGroup align="right">
+                        <p:inputText value="#{usuarioBean.filtroTexto}" placeholder="Buscar login o nombre">
+                            <p:ajax event="keyup" listener="#{usuarioBean.aplicarFiltro}" update="tabla" delay="400"/>
+                        </p:inputText>
+                    </p:toolbarGroup>
+                </p:toolbar>
+
+                <p:dataTable id="tabla" value="#{usuarioBean.modelo}" var="u" lazy="true"
+                             paginator="true" rows="10" rowsPerPageTemplate="10,25,50" size="small" stripedRows="true"
+                             emptyMessage="Sin cuentas"
+                             currentPageReportTemplate="{startRecord}-{endRecord} de {totalRecords}"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}">
+                    <p:column headerText="Login" width="130"><strong>#{u.login}</strong></p:column>
+                    <p:column headerText="Nombre">#{u.nombre}</p:column>
+                    <p:column headerText="Rol" width="130"><t:pill value="#{u.rol}" severity="info"/></p:column>
+                    <p:column headerText="Estado" width="110">
+                        <t:pill value="#{u.activo ? 'Activo' : 'Inactivo'}" severity="#{u.activo ? 'success' : 'danger'}"/>
+                    </p:column>
+                    <p:column headerText="Bloqueo" width="120" style="text-align:center">
+                        <t:pill value="#{u.bloqueado ? 'Bloqueado' : 'OK'}"
+                               severity="#{u.bloqueado ? 'danger' : 'success'}"/>
+                        <t:badge value="#{u.intentosFallidos}" visible="#{u.intentosFallidos gt 0}"/>
+                    </p:column>
+                    <p:column headerText="Ultimo acceso" width="170">#{u.ultimoAccesoTexto}</p:column>
+                    <p:column headerText="Acciones" width="210" style="text-align:center">
+                        <p:commandButton icon="pi pi-pencil" styleClass="p-button-rounded p-button-text" title="Editar"
+                                         actionListener="#{usuarioBean.editar(u)}" process="@this"
+                                         update=":dlg" oncomplete="PF('dlg').show()"/>
+                        <p:commandButton icon="pi pi-key" styleClass="p-button-rounded p-button-text p-button-help"
+                                         title="Cambiar contrasena" actionListener="#{usuarioBean.prepararContrasena(u)}"
+                                         process="@this" update=":dlgPass" oncomplete="PF('dlgPass').show()"/>
+                        <p:commandButton icon="pi pi-lock-open" styleClass="p-button-rounded p-button-text p-button-warning"
+                                         title="Desbloquear" actionListener="#{usuarioBean.desbloquear(u)}" update="tabla"
+                                         disabled="#{not u.bloqueado and u.intentosFallidos == 0}"/>
+                        <p:commandButton icon="#{u.activo ? 'pi pi-eye-slash' : 'pi pi-eye'}"
+                                         styleClass="p-button-rounded p-button-text" title="Activar/Desactivar"
+                                         actionListener="#{usuarioBean.cambiarEstado(u)}" update="tabla"/>
+                        <p:commandButton icon="pi pi-trash" styleClass="p-button-rounded p-button-text p-button-danger"
+                                         title="Eliminar" actionListener="#{usuarioBean.eliminar(u)}" update="tabla">
+                            <p:confirm header="Confirmar" message="Eliminar la cuenta #{u.login}?" icon="pi pi-exclamation-triangle"/>
+                        </p:commandButton>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+        </h:form>
+
+        <p:dialog id="dlg" widgetVar="dlg" header="#{usuarioBean.edicion ? 'Editar cuenta' : 'Nueva cuenta'}"
+                  modal="true" responsive="true" width="460" showEffect="zoom" hideEffect="fade" draggable="false">
+            <h:form id="formDlg">
+                <div class="p-fluid p-formgrid p-grid">
+                    <div class="p-field p-col-12 p-md-6">
+                        <p:outputLabel for="login" value="Login"/>
+                        <p:inputText id="login" value="#{usuarioBean.login}" disabled="#{usuarioBean.edicion}" required="true"/>
+                    </div>
+                    <div class="p-field p-col-12 p-md-6">
+                        <p:outputLabel for="rol" value="Rol"/>
+                        <p:selectOneMenu id="rol" value="#{usuarioBean.rol}">
+                            <f:selectItems value="#{catalogos.roles}" var="r" itemLabel="#{r.codigo}" itemValue="#{r.codigo}"/>
+                        </p:selectOneMenu>
+                    </div>
+                    <div class="p-field p-col-12">
+                        <p:outputLabel for="nombre" value="Nombre"/>
+                        <p:inputText id="nombre" value="#{usuarioBean.nombre}" required="true"/>
+                    </div>
+                    <div class="p-field p-col-12" rendered="#{not usuarioBean.edicion}">
+                        <p:outputLabel for="clave" value="Contrasena (min. 8 caracteres)"/>
+                        <p:password id="clave" value="#{usuarioBean.contrasena}" feedback="true" toggleMask="true"
+                                    required="#{not usuarioBean.edicion}"/>
+                    </div>
+                </div>
+                <div style="text-align:right;margin-top:.6rem">
+                    <p:commandButton value="Cancelar" icon="pi pi-times" styleClass="p-button-text" type="button"
+                                     onclick="PF('dlg').hide()"/>
+                    <p:commandButton value="Guardar" icon="pi pi-check" styleClass="p-button-success js-ripple"
+                                     action="#{usuarioBean.guardar}" update=":form:tabla"
+                                     oncomplete="if (!args.validationFailed) PF('dlg').hide()"/>
+                </div>
+            </h:form>
+        </p:dialog>
+
+        <p:dialog id="dlgPass" widgetVar="dlgPass" header="Cambiar contrasena" modal="true" width="380"
+                  showEffect="zoom" hideEffect="fade" draggable="false">
+            <h:form id="formPass">
+                <div class="p-fluid">
+                    <p:outputLabel for="np" value="Nueva contrasena"/>
+                    <p:password id="np" value="#{usuarioBean.nuevaContrasena}" feedback="true" toggleMask="true" required="true"/>
+                </div>
+                <div style="text-align:right;margin-top:.6rem">
+                    <p:commandButton value="Cancelar" icon="pi pi-times" styleClass="p-button-text" type="button"
+                                     onclick="PF('dlgPass').hide()"/>
+                    <p:commandButton value="Actualizar" icon="pi pi-check" styleClass="p-button-help js-ripple"
+                                     action="#{usuarioBean.cambiarContrasena}"
+                                     oncomplete="if (!args.validationFailed) PF('dlgPass').hide()"/>
+                </div>
+            </h:form>
+        </p:dialog>
+    </ui:define>
+</ui:composition>

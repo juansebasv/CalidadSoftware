@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<ui:composition template="/WEB-INF/plantilla/plantilla.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:t="http://tesiscalidad/ui">
+
+    <ui:param name="pageTitle" value="Perfiles"/>
+
+    <ui:define name="contenido">
+        <h:form id="form">
+            <p:panel styleClass="panel-elevado">
+                <f:facet name="header"><i class="pi pi-sitemap"></i> Materias habilitadas por profesor</f:facet>
+
+                <div class="p-fluid" style="max-width:520px;margin-bottom:1rem">
+                    <p:outputLabel for="prof" value="Profesor"/>
+                    <p:selectOneMenu id="prof" value="#{perfilBean.idProfesorSeleccionado}" filter="true"
+                                     filterMatchMode="contains">
+                        <f:selectItem itemLabel="-- Seleccione --" itemValue="#{null}"/>
+                        <f:selectItems value="#{perfilBean.profesores}" var="p"
+                                       itemLabel="#{p.codigo} - #{p.nombre}" itemValue="#{p.id}"/>
+                        <p:ajax listener="#{perfilBean.cargarMaterias}" update="pick botones"/>
+                    </p:selectOneMenu>
+                </div>
+
+                <p:pickList id="pick" value="#{perfilBean.materias}" var="m"
+                            itemValue="#{m}" itemLabel="#{m.codigo} - #{m.nombre}"
+                            converter="materiaVistaConverter"
+                            showSourceControls="true" showTargetControls="true" responsive="true">
+                    <f:facet name="sourceCaption">Disponibles</f:facet>
+                    <f:facet name="targetCaption">Habilitadas</f:facet>
+                    <p:column>#{m.codigo} - #{m.nombre} <t:pill value="Sem #{m.semestre}" severity="info"/></p:column>
+                </p:pickList>
+
+                <h:panelGroup id="botones" layout="block" style="text-align:right;margin-top:1rem">
+                    <p:commandButton value="Guardar cambios" icon="pi pi-save" styleClass="p-button-success js-ripple"
+                                     action="#{perfilBean.guardar}" update="pick"
+                                     disabled="#{empty perfilBean.idProfesorSeleccionado}"
+                                     rendered="#{sesionUsuarioBean.puedeGestionar}"/>
+                </h:panelGroup>
+            </p:panel>
+        </h:form>
+    </ui:define>
+</ui:composition>
