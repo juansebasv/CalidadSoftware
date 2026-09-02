@@ -5,9 +5,8 @@
 > repositorio (`scripst/`), con arquitectura hexagonal, API REST documentada,
 > interfaz web JSF/PrimeFaces y un entorno reproducible en Docker.
 
-El módulo `TesisCalidad-ejb` / `TesisCalidad-war` (esqueleto NetBeans vacío
-original) se conserva **solo como referencia histórica**. Todo el sistema vive en
-`horarios-app/`.
+Todo el sistema vive en `horarios-app/`; la infraestructura de arranque, en
+`docker/` y `scripst/`.
 
 ---
 

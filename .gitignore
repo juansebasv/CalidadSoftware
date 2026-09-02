@@ -1,18 +1,16 @@
-/nbproject/private/
-/TesisCalidad-war/nbproject/private/
-/TesisCalidad-ejb/nbproject/private/
-/TesisCalidad-ejb/dist/
-/TesisCalidad-ejb/build/
-/build/
-/dist/
-/TesisCalidad-war/dist/
-/TesisCalidad-war/build/
-# --- horarios-app (Maven) ---
-horarios-app/target/
+# --- Maven ---
+target/
 
 # --- IDE / SO ---
 .idea/
 *.iml
 .vscode/
+.settings/
+.classpath
+.project
 .DS_Store
 Thumbs.db
+
+# --- Runtime ---
+logs/
+*.log
