@@ -1,0 +1,10 @@
+.git
+**/target
+**/build
+**/dist
+**/nbproject/private
+TesisCalidad-ejb
+TesisCalidad-war
+src
+build.xml
+*.md

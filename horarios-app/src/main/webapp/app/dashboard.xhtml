@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<ui:composition template="/WEB-INF/plantilla/plantilla.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:t="http://tesiscalidad/ui">
+
+    <ui:param name="pageTitle" value="Tablero"/>
+
+    <ui:define name="contenido">
+        <h:form id="form">
+            <p:panel styleClass="panel-elevado" style="margin-bottom:1.2rem">
+                <f:facet name="header"><i class="pi pi-chart-bar"></i> Indicadores generales</f:facet>
+
+                <div class="p-grid fade-in-stagger">
+                    <div class="p-col-12 p-md-6 p-lg-2">
+                        <div class="tarjeta-kpi kpi-azul">
+                            <div class="valor js-contador">#{horarioBean.tablero.totalMaterias}</div>
+                            <div class="etiqueta">Materias</div>
+                            <i class="pi pi-book icono"></i>
+                        </div>
+                    </div>
+                    <div class="p-col-12 p-md-6 p-lg-2">
+                        <div class="tarjeta-kpi kpi-verde">
+                            <div class="valor js-contador">#{horarioBean.tablero.totalProfesores}</div>
+                            <div class="etiqueta">Profesores</div>
+                            <i class="pi pi-users icono"></i>
+                        </div>
+                    </div>
+                    <div class="p-col-12 p-md-6 p-lg-2">
+                        <div class="tarjeta-kpi kpi-morado">
+                            <div class="valor js-contador">#{horarioBean.tablero.totalUsuarios}</div>
+                            <div class="etiqueta">Usuarios</div>
+                            <i class="pi pi-id-card icono"></i>
+                        </div>
+                    </div>
+                    <div class="p-col-12 p-md-6 p-lg-2">
+                        <div class="tarjeta-kpi kpi-cian">
+                            <div class="valor js-contador">#{horarioBean.tablero.totalSesiones}</div>
+                            <div class="etiqueta">Sesiones</div>
+                            <i class="pi pi-calendar icono"></i>
+                        </div>
+                    </div>
+                    <div class="p-col-12 p-md-6 p-lg-2">
+                        <div class="tarjeta-kpi kpi-naranja">
+                            <div class="valor js-contador">#{horarioBean.tablero.sesionesSinDocente}</div>
+                            <div class="etiqueta">Sin docente</div>
+                            <i class="pi pi-user-minus icono"></i>
+                        </div>
+                    </div>
+                    <div class="p-col-12 p-md-6 p-lg-2">
+                        <div class="tarjeta-kpi kpi-rojo">
+                            <div class="valor js-contador">#{horarioBean.tablero.totalConflictos}</div>
+                            <div class="etiqueta">Conflictos</div>
+                            <i class="pi pi-exclamation-triangle icono"></i>
+                        </div>
+                    </div>
+                </div>
+            </p:panel>
+
+            <div class="p-grid">
+                <div class="p-col-12 p-md-6 p-lg-3">
+                    <p:panel styleClass="fade-in panel-grafica">
+                        <f:facet name="header"><i class="pi pi-calendar"></i> Sesiones por dia</f:facet>
+                        <p:barChart model="#{horarioBean.sesionesPorDia}" style="height:160px" styleClass="grafica-mini" extender="graficaMini"/>
+                    </p:panel>
+                </div>
+                <div class="p-col-12 p-md-6 p-lg-3">
+                    <p:panel styleClass="fade-in panel-grafica">
+                        <f:facet name="header"><i class="pi pi-sort-amount-up"></i> Sesiones por semestre</f:facet>
+                        <p:barChart model="#{horarioBean.sesionesPorSemestre}" style="height:160px" styleClass="grafica-mini" extender="graficaMini"/>
+                    </p:panel>
+                </div>
+                <div class="p-col-12 p-md-6 p-lg-3">
+                    <p:panel styleClass="fade-in panel-grafica">
+                        <f:facet name="header"><i class="pi pi-chart-pie"></i> Materias por tipo</f:facet>
+                        <p:pieChart model="#{horarioBean.materiasPorTipo}" style="height:160px" styleClass="grafica-mini" extender="graficaMini"/>
+                    </p:panel>
+                </div>
+                <div class="p-col-12 p-md-6 p-lg-3">
+                    <p:panel styleClass="fade-in panel-grafica">
+                        <f:facet name="header"><i class="pi pi-briefcase"></i> Profesores por contrato</f:facet>
+                        <p:donutChart model="#{horarioBean.profesoresPorContrato}" style="height:160px" styleClass="grafica-mini" extender="graficaMini"/>
+                    </p:panel>
+                </div>
+            </div>
+
+            <p:panel styleClass="panel-elevado" style="margin-top:1.2rem"
+                     rendered="#{not empty horarioBean.conflictos}">
+                <f:facet name="header">
+                    <i class="pi pi-exclamation-triangle" style="color:#c62828"></i>
+                    Conflictos de horario detectados
+                    <t:badge value="#{horarioBean.conflictos.size()}" severity="danger"/>
+                </f:facet>
+                <p:dataTable value="#{horarioBean.conflictos}" var="c" rows="5" paginator="true" size="small">
+                    <p:column headerText="Tipo">
+                        <t:pill value="#{c.tipoEtiqueta}" severity="warning"/>
+                    </p:column>
+                    <p:column headerText="Sesiones">#{c.sesionA} &#8596; #{c.sesionB}</p:column>
+                    <p:column headerText="Detalle">#{c.detalle}</p:column>
+                </p:dataTable>
+            </p:panel>
+        </h:form>
+    </ui:define>
+</ui:composition>

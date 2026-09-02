@@ -7,3 +7,12 @@
 /dist/
 /TesisCalidad-war/dist/
 /TesisCalidad-war/build/
+# --- horarios-app (Maven) ---
+horarios-app/target/
+
+# --- IDE / SO ---
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<ui:composition template="/WEB-INF/plantilla/plantilla.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:t="http://tesiscalidad/ui">
+
+    <ui:param name="pageTitle" value="Horario"/>
+
+    <ui:define name="contenido">
+        <h:form id="form">
+            <p:panel styleClass="panel-elevado">
+                <f:facet name="header"><i class="pi pi-calendar"></i> Consulta de horario</f:facet>
+
+                <div class="p-grid p-ai-end">
+                    <div class="p-col-12 p-md-3">
+                        <p:outputLabel value="Semestre"/>
+                        <p:selectOneMenu value="#{horarioBean.semestreConsulta}" style="width:100%">
+                            <f:selectItems value="#{catalogos.semestres}"/>
+                        </p:selectOneMenu>
+                    </div>
+                    <div class="p-col-12 p-md-3">
+                        <p:outputLabel value="Jornada"/>
+                        <p:selectOneMenu value="#{horarioBean.jornadaConsulta}" style="width:100%">
+                            <f:selectItem itemLabel="Todas" itemValue="#{null}"/>
+                            <f:selectItems value="#{catalogos.jornadas}" var="j"
+                                           itemLabel="#{j.etiqueta}" itemValue="#{j.codigo}"/>
+                        </p:selectOneMenu>
+                    </div>
+                    <div class="p-col-12 p-md-3">
+                        <p:commandButton value="Ver semestre" icon="pi pi-search" styleClass="js-ripple"
+                                         action="#{horarioBean.consultarPorSemestre}" update="agenda tablaSes"/>
+                    </div>
+                    <div class="p-col-12 p-md-3">
+                        <p:selectOneMenu value="#{horarioBean.idProfesorConsulta}" filter="true" style="width:100%">
+                            <f:selectItem itemLabel="-- Por profesor --" itemValue="#{null}"/>
+                            <f:selectItems value="#{horarioBean.profesores}" var="p"
+                                           itemLabel="#{p.nombre}" itemValue="#{p.id}"/>
+                            <p:ajax listener="#{horarioBean.consultarPorProfesor}" update="agenda tablaSes"/>
+                        </p:selectOneMenu>
+                    </div>
+                </div>
+
+                <p:schedule id="agenda" value="#{horarioBean.agenda}" view="timeGridWeek" locale="es"
+                            minTime="06:00:00" maxTime="23:00:00" allDaySlot="false" height="560"
+                            style="margin-top:1rem"/>
+
+                <p:dataTable id="tablaSes" value="#{horarioBean.resultadoConsulta}" var="s" rows="10"
+                             paginator="true" size="small" style="margin-top:1rem" emptyMessage="Sin resultados">
+                    <p:column headerText="Materia"><t:pill value="#{s.codigoMateria}" severity="info"/> #{s.nombreMateria}</p:column>
+                    <p:column headerText="Grupo" width="70">#{s.grupo}</p:column>
+                    <p:column headerText="Docente">#{s.nombreProfesor}</p:column>
+                    <p:column headerText="Dia" width="90">#{s.diaEtiqueta}</p:column>
+                    <p:column headerText="Horario" width="120">#{s.hora}:00 - #{s.horaFin}:00</p:column>
+                    <p:column headerText="Jornada" width="90">#{s.jornadaEtiqueta}</p:column>
+                </p:dataTable>
+            </p:panel>
+
+            <p:panel styleClass="panel-elevado" style="margin-top:1.2rem">
+                <f:facet name="header">
+                    <i class="pi pi-exclamation-triangle" style="color:#c62828"></i> Conflictos de horario
+                    <t:badge value="#{horarioBean.conflictos.size()}"/>
+                </f:facet>
+                <p:dataTable value="#{horarioBean.conflictos}" var="c" rows="10" paginator="true" size="small"
+                             emptyMessage="Sin conflictos: el horario es consistente.">
+                    <p:column headerText="Tipo" width="240"><t:pill value="#{c.tipoEtiqueta}" severity="warning"/></p:column>
+                    <p:column headerText="Sesiones" width="120">#{c.sesionA} / #{c.sesionB}</p:column>
+                    <p:column headerText="Detalle">#{c.detalle}</p:column>
+                </p:dataTable>
+            </p:panel>
+        </h:form>
+    </ui:define>
+</ui:composition>

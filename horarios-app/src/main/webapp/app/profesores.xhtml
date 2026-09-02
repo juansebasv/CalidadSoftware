@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<ui:composition template="/WEB-INF/plantilla/plantilla.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:t="http://tesiscalidad/ui">
+
+    <ui:param name="pageTitle" value="Profesores"/>
+
+    <ui:define name="contenido">
+        <h:form id="form">
+            <p:panel styleClass="panel-elevado">
+                <f:facet name="header"><i class="pi pi-users"></i> Planta docente</f:facet>
+
+                <p:toolbar style="margin-bottom:1rem;border:0;background:transparent">
+                    <p:toolbarGroup>
+                        <p:commandButton value="Nuevo profesor" icon="pi pi-plus" styleClass="p-button-success js-ripple"
+                                         actionListener="#{profesorBean.nuevo}" process="@this"
+                                         update=":dlg" oncomplete="PF('dlg').show()"
+                                         rendered="#{sesionUsuarioBean.puedeGestionar}"/>
+                    </p:toolbarGroup>
+                    <p:toolbarGroup align="right">
+                        <p:inputText value="#{profesorBean.filtroTexto}" placeholder="Buscar codigo o nombre">
+                            <p:ajax event="keyup" listener="#{profesorBean.aplicarFiltro}" update="tabla" delay="400"/>
+                        </p:inputText>
+                    </p:toolbarGroup>
+                </p:toolbar>
+
+                <p:dataTable id="tabla" value="#{profesorBean.modelo}" var="p" lazy="true"
+                             paginator="true" rows="10" rowsPerPageTemplate="10,25,50" size="small"
+                             stripedRows="true" emptyMessage="Sin profesores"
+                             currentPageReportTemplate="{startRecord}-{endRecord} de {totalRecords}"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}">
+                    <p:column headerText="Codigo" width="110"><t:pill value="#{p.codigo}" severity="info"/></p:column>
+                    <p:column headerText="Nombre">#{p.nombre}</p:column>
+                    <p:column headerText="Contrato" width="130">#{p.tipoContratoEtiqueta}</p:column>
+                    <p:column headerText="Disponible" width="110" style="text-align:center">
+                        <i class="pi #{p.disponible ? 'pi-check-circle' : 'pi-times-circle'}"
+                           style="color:#{p.disponible ? '#2e7d32' : '#c62828'};font-size:1.1rem"></i>
+                    </p:column>
+                    <p:column headerText="Cuenta" width="90" style="text-align:center">
+                        <t:pill value="#{empty p.idUsuario ? '-' : p.idUsuario}" severity="#{empty p.idUsuario ? null : 'success'}"/>
+                    </p:column>
+                    <p:column headerText="Estado" width="100">
+                        <t:pill value="#{p.activo ? 'Activo' : 'Inactivo'}" severity="#{p.activo ? 'success' : 'danger'}"/>
+                    </p:column>
+                    <p:column headerText="Acciones" width="170" style="text-align:center"
+                              rendered="#{sesionUsuarioBean.puedeGestionar}">
+                        <p:commandButton icon="pi pi-pencil" styleClass="p-button-rounded p-button-text" title="Editar"
+                                         actionListener="#{profesorBean.editar(p)}" process="@this"
+                                         update=":dlg" oncomplete="PF('dlg').show()"/>
+                        <p:commandButton icon="#{p.activo ? 'pi pi-eye-slash' : 'pi pi-eye'}"
+                                         styleClass="p-button-rounded p-button-text p-button-warning" title="Activar/Desactivar"
+                                         actionListener="#{profesorBean.cambiarEstado(p)}" update="tabla"/>
+                        <p:commandButton icon="pi pi-trash" styleClass="p-button-rounded p-button-text p-button-danger"
+                                         title="Eliminar" actionListener="#{profesorBean.eliminar(p)}" update="tabla">
+                            <p:confirm header="Confirmar" message="Eliminar al profesor #{p.nombre}?" icon="pi pi-exclamation-triangle"/>
+                        </p:commandButton>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+        </h:form>
+
+        <p:dialog id="dlg" widgetVar="dlg" header="#{profesorBean.edicion ? 'Editar profesor' : 'Nuevo profesor'}"
+                  modal="true" responsive="true" width="480" showEffect="zoom" hideEffect="fade" draggable="false">
+            <h:form id="formDlg">
+                <div class="p-fluid p-formgrid p-grid">
+                    <div class="p-field p-col-12 p-md-6">
+                        <p:outputLabel for="codigo" value="Codigo"/>
+                        <p:inputText id="codigo" value="#{profesorBean.codigo}" disabled="#{profesorBean.edicion}"
+                                     required="true" placeholder="DOC-9999"/>
+                    </div>
+                    <div class="p-field p-col-12 p-md-6">
+                        <p:outputLabel for="contrato" value="Contrato"/>
+                        <p:selectOneMenu id="contrato" value="#{profesorBean.tipoContrato}">
+                            <f:selectItems value="#{catalogos.tiposContrato}" var="t"
+                                           itemLabel="#{t.etiqueta}" itemValue="#{t.codigo}"/>
+                        </p:selectOneMenu>
+                    </div>
+                    <div class="p-field p-col-12">
+                        <p:outputLabel for="nombre" value="Nombre"/>
+                        <p:inputText id="nombre" value="#{profesorBean.nombre}" required="true"/>
+                    </div>
+                    <div class="p-field p-col-12 p-md-6">
+                        <p:outputLabel for="idUsuario" value="Id de cuenta (opcional)"/>
+                        <p:inputNumber id="idUsuario" value="#{profesorBean.idUsuario}" decimalPlaces="0"/>
+                    </div>
+                    <div class="p-field p-col-12 p-md-6" style="display:flex;align-items:flex-end">
+                        <p:selectBooleanCheckbox value="#{profesorBean.disponible}"/>
+                        <span style="margin-left:.5rem">Disponible</span>
+                    </div>
+                </div>
+                <div style="text-align:right;margin-top:.6rem">
+                    <p:commandButton value="Cancelar" icon="pi pi-times" styleClass="p-button-text"
+                                     type="button" onclick="PF('dlg').hide()"/>
+                    <p:commandButton value="Guardar" icon="pi pi-check" styleClass="p-button-success js-ripple"
+                                     action="#{profesorBean.guardar}" update=":form:tabla"
+                                     oncomplete="if (!args.validationFailed) PF('dlg').hide()"/>
+                </div>
+            </h:form>
+        </p:dialog>
+    </ui:define>
+</ui:composition>

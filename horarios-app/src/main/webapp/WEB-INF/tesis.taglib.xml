@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<facelet-taglib xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+                    http://xmlns.jcp.org/xml/ns/javaee/web-facelettaglibrary_2_2.xsd"
+                version="2.2">
+    <namespace>http://tesiscalidad/ui</namespace>
+
+    <!-- Sustitutos ligeros de componentes que no existen en PrimeFaces 8 -->
+    <tag>
+        <tag-name>pill</tag-name>
+        <source>tags/pill.xhtml</source>
+    </tag>
+    <tag>
+        <tag-name>badge</tag-name>
+        <source>tags/badge.xhtml</source>
+    </tag>
+</facelet-taglib>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+<f:metadata>
+    <f:viewAction action="#{sesionUsuarioBean.irAlTableroSiAutenticado}"/>
+</f:metadata>
+
+<h:head>
+    <f:facet name="first">
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <title>Ingreso · Horarios Docentes</title>
+    </f:facet>
+    <h:outputStylesheet library="css" name="app.css"/>
+</h:head>
+
+<h:body styleClass="login-fondo">
+    <p:growl id="avisos" showDetail="true" life="6000"/>
+
+    <div class="login-tarjeta">
+        <div class="marca">
+            <i class="pi pi-calendar"></i>
+            <h1>Asignacion de Horarios Docentes</h1>
+            <p>Proyecto de Calidad de Software</p>
+        </div>
+
+        <h:form id="formLogin" prependId="false">
+            <p:messages id="msgLogin" showSummary="true" showDetail="true" closable="true"
+                        styleClass="mensajes-pagina" style="margin-bottom:1rem"/>
+            <div class="campo">
+                <h:outputLabel for="login" value="Usuario" styleClass="etiqueta-campo"/>
+                <p:inputText id="login" value="#{loginBean.login}" required="true"
+                             requiredMessage="El usuario es obligatorio" autocomplete="username"
+                             placeholder="usuario">
+                    <p:keyFilter regEx="/[a-zA-Z0-9._-]/i"/>
+                </p:inputText>
+                <p:message for="login" display="text"/>
+            </div>
+
+            <div class="campo">
+                <h:outputLabel for="clave" value="Contrasena" styleClass="etiqueta-campo"/>
+                <p:password id="clave" value="#{loginBean.contrasena}" required="true"
+                            requiredMessage="La contrasena es obligatoria" feedback="false"
+                            toggleMask="true" autocomplete="current-password" placeholder="contrasena"/>
+                <p:message for="clave" display="text"/>
+            </div>
+
+            <p:commandButton value="Ingresar" icon="pi pi-sign-in" ajax="false"
+                             action="#{loginBean.iniciar}" styleClass="p-button-primary js-ripple"
+                             style="width:100%;margin-top:.6rem"/>
+        </h:form>
+
+        <div class="login-pista">
+            <strong>Cuentas de prueba</strong><br/>
+            admin / Admin*2024 &#160;&#8226;&#160; lgomez / Coord*2024<br/>
+            docente01 / Prof*2024 &#160;&#8226;&#160; consulta / Consulta*2024
+        </div>
+    </div>
+</h:body>
+</html>

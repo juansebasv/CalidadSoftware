@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.tesiscalidad</groupId>
+    <artifactId>horarios-app</artifactId>
+    <version>1.0.0</version>
+    <packaging>war</packaging>
+    <name>Sistema de Asignacion de Horarios Docentes</name>
+
+    <properties>
+        <maven.compiler.release>11</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <failOnMissingWebXml>false</failOnMissingWebXml>
+
+        <version.javaee-api>8.0.1</version.javaee-api>
+        <version.mp-openapi>2.0.1</version.mp-openapi>
+        <version.mp-config>2.0</version.mp-config>
+        <version.primefaces>8.0</version.primefaces>
+        <version.slf4j>1.7.36</version.slf4j>
+        <version.logback>1.2.13</version.logback>
+        <version.bcrypt>0.10.2</version.bcrypt>
+
+        <version.junit>5.10.2</version.junit>
+        <version.mockito>4.11.0</version.mockito>
+        <version.assertj>3.24.2</version.assertj>
+
+        <version.compiler-plugin>3.11.0</version.compiler-plugin>
+        <version.war-plugin>3.4.0</version.war-plugin>
+        <version.surefire-plugin>3.2.5</version.surefire-plugin>
+        <version.jacoco-plugin>0.8.11</version.jacoco-plugin>
+
+        <coverage.line.minimum>0.95</coverage.line.minimum>
+        <coverage.branch.minimum>0.80</coverage.branch.minimum>
+        <coverage.method.minimum>0.94</coverage.method.minimum>
+    </properties>
+
+    <dependencies>
+        <!-- ================= Plataforma (la aporta Payara) ================= -->
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <version>${version.javaee-api}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.openapi</groupId>
+            <artifactId>microprofile-openapi-api</artifactId>
+            <version>${version.mp-openapi}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.config</groupId>
+            <artifactId>microprofile-config-api</artifactId>
+            <version>${version.mp-config}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- ================= Runtime empaquetado en el WAR ================= -->
+        <dependency>
+            <groupId>org.primefaces</groupId>
+            <artifactId>primefaces</artifactId>
+            <version>${version.primefaces}</version>
+        </dependency>
+        <!-- Assets estaticos de Swagger UI (se desempaquetan al WAR en /swagger-ui) -->
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>swagger-ui</artifactId>
+            <version>4.15.5</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${version.slf4j}</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${version.logback}</version>
+        </dependency>
+        <dependency>
+            <groupId>at.favre.lib</groupId>
+            <artifactId>bcrypt</artifactId>
+            <version>${version.bcrypt}</version>
+        </dependency>
+
+        <!-- ========================== Pruebas ============================= -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${version.junit}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${version.mockito}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>${version.mockito}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${version.assertj}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>ROOT</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${version.compiler-plugin}</version>
+            </plugin>
+
+            <!-- Desempaqueta Swagger UI del webjar para servirlo estatico en /swagger-ui -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.6.1</version>
+                <executions>
+                    <execution>
+                        <id>desempaquetar-swagger-ui</id>
+                        <phase>prepare-package</phase>
+                        <goals><goal>unpack</goal></goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.webjars</groupId>
+                                    <artifactId>swagger-ui</artifactId>
+                                    <version>4.15.5</version>
+                                    <outputDirectory>${project.build.directory}/swagger-ui</outputDirectory>
+                                    <includes>META-INF/resources/webjars/swagger-ui/4.15.5/**</includes>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>${version.war-plugin}</version>
+                <configuration>
+                    <webResources>
+                        <resource>
+                            <directory>${project.build.directory}/swagger-ui/META-INF/resources/webjars/swagger-ui/4.15.5</directory>
+                            <targetPath>swagger-ui</targetPath>
+                            <excludes>
+                                <exclude>index.html</exclude>
+                                <exclude>index.css</exclude>
+                                <exclude>swagger-initializer.js</exclude>
+                            </excludes>
+                        </resource>
+                    </webResources>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${version.surefire-plugin}</version>
+            </plugin>
+
+            <!--
+              Cobertura. El chequeo se aplica sobre TODO el codigo unit-testable
+              (domain + application + adaptadores de infraestructura puros).
+              Se excluyen las clases que solo se pueden ejercitar con un
+              contenedor Jakarta EE en marcha (entidades JPA, adaptadores JPA,
+              beans JSF, recursos JAX-RS), que quedan cubiertas por la
+              verificacion end-to-end del despliegue.
+            -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${version.jacoco-plugin}</version>
+                <configuration>
+                    <excludes>
+                        <exclude>com/tesiscalidad/horarios/infrastructure/persistence/entity/**</exclude>
+                        <exclude>com/tesiscalidad/horarios/infrastructure/persistence/adapter/**</exclude>
+                        <exclude>com/tesiscalidad/horarios/infrastructure/logging/**</exclude>
+                        <exclude>com/tesiscalidad/horarios/adapter/**</exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals><goal>prepare-agent</goal></goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals><goal>report</goal></goals>
+                    </execution>
+                    <execution>
+                        <id>check-core-coverage</id>
+                        <phase>verify</phase>
+                        <goals><goal>check</goal></goals>
+                        <configuration>
+                            <excludes>
+                                <exclude>com/tesiscalidad/horarios/infrastructure/persistence/entity/**</exclude>
+                                <exclude>com/tesiscalidad/horarios/infrastructure/persistence/adapter/**</exclude>
+                                <exclude>com/tesiscalidad/horarios/infrastructure/logging/**</exclude>
+                                <exclude>com/tesiscalidad/horarios/adapter/**</exclude>
+                            </excludes>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>${coverage.line.minimum}</minimum>
+                                        </limit>
+                                        <limit>
+                                            <counter>BRANCH</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>${coverage.branch.minimum}</minimum>
+                                        </limit>
+                                        <limit>
+                                            <counter>METHOD</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>${coverage.method.minimum}</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

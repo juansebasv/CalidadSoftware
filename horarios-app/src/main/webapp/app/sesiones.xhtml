@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<ui:composition template="/WEB-INF/plantilla/plantilla.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:t="http://tesiscalidad/ui">
+
+    <ui:param name="pageTitle" value="Sesiones de clase"/>
+
+    <ui:define name="contenido">
+        <h:form id="form">
+            <p:tabView>
+                <p:tab title="Listado" titleStyleClass="pi pi-list">
+                    <p:toolbar style="margin:1rem 0;border:0;background:transparent">
+                        <p:toolbarGroup>
+                            <p:commandButton value="Programar sesion" icon="pi pi-calendar-plus"
+                                             styleClass="p-button-success js-ripple"
+                                             actionListener="#{sesionBean.nuevo}" process="@this"
+                                             update=":dlg" oncomplete="PF('dlg').show()"
+                                             rendered="#{sesionUsuarioBean.puedeGestionar}"/>
+                        </p:toolbarGroup>
+                        <p:toolbarGroup align="right">
+                            <p:selectOneMenu value="#{sesionBean.filtroSemestre}">
+                                <f:selectItem itemLabel="Todos los semestres" itemValue="#{null}"/>
+                                <f:selectItems value="#{catalogos.semestres}"/>
+                                <p:ajax listener="#{sesionBean.aplicarFiltro}" update="@form"/>
+                            </p:selectOneMenu>
+                        </p:toolbarGroup>
+                    </p:toolbar>
+
+                    <p:dataTable id="tabla" value="#{sesionBean.modelo}" var="s" lazy="true"
+                                 paginator="true" rows="10" rowsPerPageTemplate="10,25,50" size="small"
+                                 stripedRows="true" emptyMessage="Sin sesiones"
+                                 currentPageReportTemplate="{startRecord}-{endRecord} de {totalRecords}"
+                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}">
+                        <p:column headerText="Materia">
+                            <t:pill value="#{s.codigoMateria}" severity="info"/> #{s.nombreMateria}
+                        </p:column>
+                        <p:column headerText="Grupo" width="70" style="text-align:center">#{s.grupo}</p:column>
+                        <p:column headerText="Docente">#{s.nombreProfesor}</p:column>
+                        <p:column headerText="Dia" width="90">#{s.diaEtiqueta}</p:column>
+                        <p:column headerText="Horario" width="110">#{s.hora}:00 - #{s.horaFin}:00</p:column>
+                        <p:column headerText="Sem." width="60" style="text-align:center">#{s.semestre}</p:column>
+                        <p:column headerText="Jornada" width="90">
+                            <t:pill value="#{s.jornadaEtiqueta}" severity="#{s.jornada eq 'D' ? 'warning' : null}"/>
+                        </p:column>
+                        <p:column headerText="Acciones" width="150" style="text-align:center"
+                                  rendered="#{sesionUsuarioBean.puedeGestionar}">
+                            <p:commandButton icon="pi pi-pencil" styleClass="p-button-rounded p-button-text" title="Editar"
+                                             actionListener="#{sesionBean.editar(s)}" process="@this"
+                                             update=":dlg" oncomplete="PF('dlg').show()"/>
+                            <p:commandButton icon="pi pi-user-minus" styleClass="p-button-rounded p-button-text p-button-warning"
+                                             title="Quitar docente" actionListener="#{sesionBean.quitarDocente(s)}"
+                                             update="@form" disabled="#{empty s.idProfesor}"/>
+                            <p:commandButton icon="pi pi-trash" styleClass="p-button-rounded p-button-text p-button-danger"
+                                             title="Cancelar" actionListener="#{sesionBean.cancelar(s)}" update="@form">
+                                <p:confirm header="Confirmar" message="Cancelar esta sesion?" icon="pi pi-exclamation-triangle"/>
+                            </p:commandButton>
+                        </p:column>
+                    </p:dataTable>
+                </p:tab>
+
+                <p:tab title="Agenda semanal" titleStyleClass="pi pi-calendar">
+                    <p:schedule id="agenda" value="#{sesionBean.agenda}" view="timeGridWeek" locale="es"
+                                minTime="06:00:00" maxTime="23:00:00" allDaySlot="false" height="620"
+                                style="margin-top:1rem"/>
+                </p:tab>
+            </p:tabView>
+        </h:form>
+
+        <p:dialog id="dlg" widgetVar="dlg" header="#{sesionBean.edicion ? 'Reprogramar sesion' : 'Programar sesion'}"
+                  modal="true" responsive="true" width="560" showEffect="zoom" hideEffect="fade" draggable="false">
+            <h:form id="formDlg">
+                <div class="p-fluid p-formgrid p-grid">
+                    <div class="p-field p-col-12 p-md-6">
+                        <p:outputLabel for="mat" value="Materia"/>
+                        <p:selectOneMenu id="mat" value="#{sesionBean.idMateria}" filter="true"
+                                         disabled="#{sesionBean.edicion}" required="#{not sesionBean.edicion}">
+                            <f:selectItem itemLabel="-- Seleccione --" itemValue="#{null}"/>
+                            <f:selectItems value="#{sesionBean.materias}" var="m"
+                                           itemLabel="#{m.codigo} - #{m.nombre}" itemValue="#{m.id}"/>
+                        </p:selectOneMenu>
+                    </div>
+                    <div class="p-field p-col-12 p-md-6">
+                        <p:outputLabel for="doc" value="Docente"/>
+                        <p:selectOneMenu id="doc" value="#{sesionBean.idProfesor}" filter="true">
+                            <f:selectItem itemLabel="(sin asignar)" itemValue="#{null}"/>
+                            <f:selectItems value="#{sesionBean.profesores}" var="p"
+                                           itemLabel="#{p.codigo} - #{p.nombre}" itemValue="#{p.id}"/>
+                        </p:selectOneMenu>
+                    </div>
+                    <div class="p-field p-col-6 p-md-3">
+                        <p:outputLabel for="grp" value="Grupo"/>
+                        <p:inputText id="grp" value="#{sesionBean.grupo}" disabled="#{sesionBean.edicion}"/>
+                    </div>
+                    <div class="p-field p-col-6 p-md-3">
+                        <p:outputLabel for="dia" value="Dia"/>
+                        <p:selectOneMenu id="dia" value="#{sesionBean.dia}">
+                            <f:selectItems value="#{catalogos.diasHabiles}" var="d"
+                                           itemLabel="#{d.etiqueta}" itemValue="#{d.codigo}"/>
+                        </p:selectOneMenu>
+                    </div>
+                    <div class="p-field p-col-6 p-md-2">
+                        <p:outputLabel for="hora" value="Hora"/>
+                        <p:inputNumber id="hora" value="#{sesionBean.hora}" minValue="6" maxValue="22"/>
+                    </div>
+                    <div class="p-field p-col-6 p-md-2">
+                        <p:outputLabel for="dur" value="Bloques"/>
+                        <p:inputNumber id="dur" value="#{sesionBean.duracion}" minValue="1" maxValue="8"/>
+                    </div>
+                    <div class="p-field p-col-6 p-md-2">
+                        <p:outputLabel for="sem" value="Sem."/>
+                        <p:inputNumber id="sem" value="#{sesionBean.semestre}" minValue="1" maxValue="12"
+                                       disabled="#{sesionBean.edicion}"/>
+                    </div>
+                    <div class="p-field p-col-6 p-md-3">
+                        <p:outputLabel for="jor" value="Jornada"/>
+                        <p:selectOneMenu id="jor" value="#{sesionBean.jornada}">
+                            <f:selectItems value="#{catalogos.jornadas}" var="j"
+                                           itemLabel="#{j.etiqueta}" itemValue="#{j.codigo}"/>
+                        </p:selectOneMenu>
+                    </div>
+                </div>
+                <p:staticMessage severity="info" summary="Validaciones"
+                                 detail="Se verifica que el docente este habilitado (perfil), tenga disponibilidad en la franja y que no exista cruce con otra sesion suya o del mismo grupo."/>
+                <div style="text-align:right;margin-top:.6rem">
+                    <p:commandButton value="Cancelar" icon="pi pi-times" styleClass="p-button-text" type="button"
+                                     onclick="PF('dlg').hide()"/>
+                    <p:commandButton value="Guardar" icon="pi pi-check" styleClass="p-button-success js-ripple"
+                                     action="#{sesionBean.guardar}" update=":form"
+                                     oncomplete="if (!args.validationFailed) PF('dlg').hide()"/>
+                </div>
+            </h:form>
+        </p:dialog>
+    </ui:define>
+</ui:composition>

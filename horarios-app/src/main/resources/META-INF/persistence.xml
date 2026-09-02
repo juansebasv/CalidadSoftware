@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.2"
+             xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence
+                                 http://xmlns.jcp.org/xml/ns/persistence/persistence_2_2.xsd">
+
+    <persistence-unit name="horariosPU" transaction-type="JTA">
+        <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+        <jta-data-source>jdbc/TesisMyDatasource</jta-data-source>
+
+        <class>com.tesiscalidad.horarios.infrastructure.persistence.entity.UsuarioEntity</class>
+        <class>com.tesiscalidad.horarios.infrastructure.persistence.entity.MateriaEntity</class>
+        <class>com.tesiscalidad.horarios.infrastructure.persistence.entity.ProfesorEntity</class>
+        <class>com.tesiscalidad.horarios.infrastructure.persistence.entity.PerfilEntity</class>
+        <class>com.tesiscalidad.horarios.infrastructure.persistence.entity.DisponibilidadProfesorEntity</class>
+        <class>com.tesiscalidad.horarios.infrastructure.persistence.entity.SesionClaseEntity</class>
+        <class>com.tesiscalidad.horarios.infrastructure.persistence.entity.AuditoriaEntity</class>
+        <exclude-unlisted-classes>true</exclude-unlisted-classes>
+
+        <shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>
+        <validation-mode>NONE</validation-mode>
+
+        <properties>
+            <!-- El esquema lo administran los scripts SQL (docker/initdb) -->
+            <property name="javax.persistence.schema-generation.database.action" value="none"/>
+
+            <!-- Rendimiento para volumenes altos -->
+            <property name="eclipselink.jdbc.batch-writing" value="JDBC"/>
+            <property name="eclipselink.jdbc.batch-writing.size" value="100"/>
+            <property name="eclipselink.jdbc.cache-statements" value="true"/>
+            <property name="eclipselink.jdbc.cache-statements.size" value="200"/>
+            <property name="eclipselink.persistence-context.close-on-commit" value="true"/>
+            <property name="eclipselink.persistence-context.flush-mode" value="commit"/>
+            <property name="eclipselink.query-results-cache" value="false"/>
+
+            <!-- Trazas: solo advertencias y errores -->
+            <property name="eclipselink.logging.level" value="WARNING"/>
+            <property name="eclipselink.logging.level.sql" value="WARNING"/>
+            <property name="eclipselink.logging.parameters" value="false"/>
+        </properties>
+    </persistence-unit>
+</persistence>
